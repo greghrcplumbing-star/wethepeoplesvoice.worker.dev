@@ -1,0 +1,1 @@
+# wethepeoplesvoice.worker.dev
