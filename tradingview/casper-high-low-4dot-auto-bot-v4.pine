@@ -1,0 +1,154 @@
+//@version=6
+strategy("CASPER HIGH/LOW 4-DOT AUTO BOT v4", overlay=true, pyramiding=0, process_orders_on_close=true, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.06, max_labels_count=500)
+
+secret = input.string("CHANGE_ME", "Webhook Passphrase")
+qtyPct = input.float(10.0, "Order Size %", minval=0.1, maxval=100.0)
+tradeMode = input.string("Both", "Trade Mode", options=["Both", "Long Only", "Short Only"])
+
+tfFast = input.timeframe("5", "Fast TF")
+tfMid = input.timeframe("15", "Middle TF")
+tfTrend = input.timeframe("60", "Trend TF")
+tfMajor = input.timeframe("240", "Major TF")
+
+fastLen = input.int(9, "Fast EMA", minval=1)
+slowLen = input.int(21, "Slow EMA", minval=1)
+majorLen = input.int(200, "Major EMA", minval=20)
+
+hiLowLen = input.int(10, "High/Low Lookback", minval=2)
+rsiLen = input.int(14, "RSI Length", minval=2)
+rsiLongMin = input.float(55.0, "Long RSI Minimum", step=0.5)
+rsiShortMax = input.float(45.0, "Short RSI Maximum", step=0.5)
+
+volLen = input.int(20, "Volume SMA", minval=1)
+useVolume = input.bool(true, "Use Volume Filter")
+
+adxLen = input.int(14, "ADX Length", minval=2)
+adxMin = input.float(18.0, "Minimum ADX", step=0.5)
+useAdx = input.bool(true, "Use ADX Filter")
+
+atrLen = input.int(14, "ATR Length", minval=1)
+stopATR = input.float(1.5, "Stop ATR", step=0.1)
+takeATR = input.float(2.5, "Take ATR", step=0.1)
+
+showDots = input.bool(true, "Show Dots")
+showWarning = input.bool(true, "Show Yellow Warning")
+showEma = input.bool(true, "Show EMAs")
+
+f_adx(_len) =>
+    upMove = high - high[1]
+    downMove = low[1] - low
+    plusDM = upMove > downMove and upMove > 0.0 ? upMove : 0.0
+    minusDM = downMove > upMove and downMove > 0.0 ? downMove : 0.0
+    trVal = ta.rma(ta.tr(true), _len)
+    plusDI = 100.0 * ta.rma(plusDM, _len) / math.max(trVal, 0.00001)
+    minusDI = 100.0 * ta.rma(minusDM, _len) / math.max(trVal, 0.00001)
+    dx = 100.0 * math.abs(plusDI - minusDI) / math.max(plusDI + minusDI, 0.00001)
+    ta.rma(dx, _len)
+
+f_signal() =>
+    emaFast = ta.ema(close, fastLen)
+    emaSlow = ta.ema(close, slowLen)
+    emaMajor = ta.ema(close, majorLen)
+    rsiVal = ta.rsi(close, rsiLen)
+    volAvg = ta.sma(volume, volLen)
+    adxVal = f_adx(adxLen)
+
+    longTrend = close > emaFast and emaFast > emaSlow and close > emaMajor
+    longRsi = rsiVal >= rsiLongMin
+    longBreak = close > ta.highest(high, hiLowLen)[1]
+    longVol = not useVolume or volume > volAvg
+    longAdx = not useAdx or adxVal >= adxMin
+
+    shortTrend = close < emaFast and emaFast < emaSlow and close < emaMajor
+    shortRsi = rsiVal <= rsiShortMax
+    shortBreak = close < ta.lowest(low, hiLowLen)[1]
+    shortVol = not useVolume or volume > volAvg
+    shortAdx = not useAdx or adxVal >= adxMin
+
+    longCount = (longTrend ? 1 : 0) + (longRsi ? 1 : 0) + (longBreak ? 1 : 0) + (longVol ? 1 : 0)
+    shortCount = (shortTrend ? 1 : 0) + (shortRsi ? 1 : 0) + (shortBreak ? 1 : 0) + (shortVol ? 1 : 0)
+
+    longReady = longCount == 4 and longAdx
+    shortReady = shortCount == 4 and shortAdx
+    longWarn = longCount == 3 and longAdx
+    shortWarn = shortCount == 3 and shortAdx
+
+    [longReady, shortReady, longWarn, shortWarn]
+
+[fastLong, fastShort, fastWarnLong, fastWarnShort] = request.security(syminfo.tickerid, tfFast, f_signal(), barmerge.gaps_off, barmerge.lookahead_off)
+[midLong, midShort, midWarnLong, midWarnShort] = request.security(syminfo.tickerid, tfMid, f_signal(), barmerge.gaps_off, barmerge.lookahead_off)
+[trendLong, trendShort, trendWarnLong, trendWarnShort] = request.security(syminfo.tickerid, tfTrend, f_signal(), barmerge.gaps_off, barmerge.lookahead_off)
+[majorLong, majorShort, majorWarnLong, majorWarnShort] = request.security(syminfo.tickerid, tfMajor, f_signal(), barmerge.gaps_off, barmerge.lookahead_off)
+
+atr = ta.atr(atrLen)
+
+emaFastChart = ta.ema(close, fastLen)
+emaSlowChart = ta.ema(close, slowLen)
+emaMajorChart = ta.ema(close, majorLen)
+
+plot(showEma ? emaFastChart : na, "Fast EMA")
+plot(showEma ? emaSlowChart : na, "Slow EMA")
+plot(showEma ? emaMajorChart : na, "Major EMA")
+
+fastLongY = low - atr * 0.45
+midLongY = low - atr * 0.80
+trendLongY = low - atr * 1.15
+majorLongY = low - atr * 1.50
+
+fastShortY = high + atr * 0.45
+midShortY = high + atr * 0.80
+trendShortY = high + atr * 1.15
+majorShortY = high + atr * 1.50
+
+warnLongY = low - atr * 1.90
+warnShortY = high + atr * 1.90
+
+plot(showDots and fastLong ? fastLongY : na, "Fast Long Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and midLong ? midLongY : na, "Middle Long Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and trendLong ? trendLongY : na, "Trend Long Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and majorLong ? majorLongY : na, "Major Long Dot", style=plot.style_circles, linewidth=3)
+
+plot(showDots and fastShort ? fastShortY : na, "Fast Short Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and midShort ? midShortY : na, "Middle Short Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and trendShort ? trendShortY : na, "Trend Short Dot", style=plot.style_circles, linewidth=3)
+plot(showDots and majorShort ? majorShortY : na, "Major Short Dot", style=plot.style_circles, linewidth=3)
+
+yellowLong = showWarning and fastWarnLong and (midLong or trendLong or majorLong)
+yellowShort = showWarning and fastWarnShort and (midShort or trendShort or majorShort)
+
+plot(yellowLong ? warnLongY : na, "Yellow Long Warning", style=plot.style_circles, linewidth=4, color=color.yellow)
+plot(yellowShort ? warnShortY : na, "Yellow Short Warning", style=plot.style_circles, linewidth=4, color=color.yellow)
+
+allLong = fastLong and midLong and trendLong and majorLong
+allShort = fastShort and midShort and trendShort and majorShort
+
+longSignal = allLong and not allLong[1] and barstate.isconfirmed
+shortSignal = allShort and not allShort[1] and barstate.isconfirmed
+
+canLong = tradeMode == "Both" or tradeMode == "Long Only"
+canShort = tradeMode == "Both" or tradeMode == "Short Only"
+
+plotshape(longSignal and canLong, title="BUY", style=shape.labelup, location=location.belowbar, text="BUY", size=size.small)
+plotshape(shortSignal and canShort, title="SELL", style=shape.labeldown, location=location.abovebar, text="SELL", size=size.small)
+
+longJson = '{"secret":"' + secret + '","system":"casper_high_low_4dot_v4","action":"buy","ticker":"' + syminfo.ticker + '","exchange":"' + syminfo.prefix + '","price":' + str.tostring(close) + ',"qty_pct":' + str.tostring(qtyPct) + ',"tf_fast":"' + tfFast + '","tf_mid":"' + tfMid + '","tf_trend":"' + tfTrend + '","tf_major":"' + tfMajor + '","time":' + str.tostring(time) + '}'
+shortJson = '{"secret":"' + secret + '","system":"casper_high_low_4dot_v4","action":"sell","ticker":"' + syminfo.ticker + '","exchange":"' + syminfo.prefix + '","price":' + str.tostring(close) + ',"qty_pct":' + str.tostring(qtyPct) + ',"tf_fast":"' + tfFast + '","tf_mid":"' + tfMid + '","tf_trend":"' + tfTrend + '","tf_major":"' + tfMajor + '","time":' + str.tostring(time) + '}'
+
+if longSignal and canLong
+    strategy.entry("LONG", strategy.long, alert_message=longJson)
+    alert(longJson, alert.freq_once_per_bar_close)
+
+if shortSignal and canShort
+    strategy.entry("SHORT", strategy.short, alert_message=shortJson)
+    alert(shortJson, alert.freq_once_per_bar_close)
+
+longStop = strategy.position_avg_price - atr * stopATR
+longTake = strategy.position_avg_price + atr * takeATR
+shortStop = strategy.position_avg_price + atr * stopATR
+shortTake = strategy.position_avg_price - atr * takeATR
+
+strategy.exit("LONG EXIT", from_entry="LONG", stop=longStop, limit=longTake)
+strategy.exit("SHORT EXIT", from_entry="SHORT", stop=shortStop, limit=shortTake)
+
+alertcondition(longSignal and canLong, title="CASPER BUY", message="CASPER BUY")
+alertcondition(shortSignal and canShort, title="CASPER SELL", message="CASPER SELL")
