@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casper Command Dashboard</title>
+  <style>
+    :root {
+      --bg: #090b12;
+      --panel: #141824;
+      --panel2: #1c2233;
+      --text: #f4f7fb;
+      --muted: #aeb7c6;
+      --gold: #f6c85f;
+      --green: #33d17a;
+      --red: #ff5c5c;
+      --blue: #6ea8fe;
+      --border: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, #1e2842, var(--bg) 42%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 32px 20px 18px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 { margin: 0; font-size: clamp(28px, 5vw, 52px); letter-spacing: 1px; }
+    header p { margin: 10px auto 0; max-width: 900px; color: var(--muted); line-height: 1.5; }
+    main { width: min(1180px, 94%); margin: 24px auto 60px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.24);
+    }
+    .card h2 { margin: 0 0 8px; font-size: 20px; }
+    .card p { margin: 0 0 14px; color: var(--muted); line-height: 1.45; }
+    .links { display: grid; gap: 10px; }
+    a.button, button.button {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+    }
+    a.button:hover, button.button:hover { background: rgba(255,255,255,0.12); }
+    .gold { color: var(--gold); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .blue { color: var(--blue); }
+    .note {
+      margin-top: 22px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(246,200,95,0.08);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    code {
+      display: block;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 12px;
+      color: #dce7ff;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Casper Command Dashboard</h1>
+    <p>Click-and-go launch pad for the campaign site, TradingView bot, GitHub files, YouTube workflow, lawful opportunity research, and daily build tools.</p>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card">
+        <h2 class="gold">Campaign Website</h2>
+        <p>Main public campaign site and connected GitHub repo.</p>
+        <div class="links">
+          <a class="button" href="https://gregoryrsmithforcongress.wethepeoplesvoice.workers.dev" target="_blank" rel="noopener">Open Live Campaign Site</a>
+          <a class="button" href="https://github.com/greghrcplumbing-star/wethepeoplesvoice.worker.dev" target="_blank" rel="noopener">Open GitHub Repo</a>
+          <a class="button" href="https://dash.cloudflare.com" target="_blank" rel="noopener">Open Cloudflare Dashboard</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="green">Trading Bot</h2>
+        <p>TradingView Pine Script, webhook lane, and Phemex tools.</p>
+        <div class="links">
+          <a class="button" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Open TradingView Chart</a>
+          <a class="button" href="https://github.com/greghrcplumbing-star/wethepeoplesvoice.worker.dev/blob/main/tradingview/casper-high-low-4dot-auto-bot-v4.pine" target="_blank" rel="noopener">Open Casper Pine Script</a>
+          <a class="button" href="https://phemex.com" target="_blank" rel="noopener">Open Phemex</a>
+          <button class="button" onclick="copyText('http://167.71.25.184/webhook')">Copy DigitalOcean Webhook</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="blue">YouTube / Media</h2>
+        <p>Video creation, channel control, thumbnails, and posting workflow.</p>
+        <div class="links">
+          <a class="button" href="https://studio.youtube.com" target="_blank" rel="noopener">Open YouTube Studio</a>
+          <a class="button" href="https://www.youtube.com" target="_blank" rel="noopener">Open YouTube</a>
+          <a class="button" href="https://www.canva.com" target="_blank" rel="noopener">Open Canva</a>
+          <a class="button" href="https://www.capcut.com" target="_blank" rel="noopener">Open CapCut</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="gold">Lawful Free Money / Claims</h2>
+        <p>Use these for legitimate refunds, settlements, benefits, grants, and unclaimed property. No fake claims. No transaction rerouting.</p>
+        <div class="links">
+          <a class="button" href="https://www.ftc.gov/enforcement/refunds" target="_blank" rel="noopener">FTC Refunds</a>
+          <a class="button" href="https://www.consumerfinance.gov/enforcement/payments-harmed-consumers/" target="_blank" rel="noopener">CFPB Consumer Payments</a>
+          <a class="button" href="https://www.classaction.org/settlements" target="_blank" rel="noopener">Class Action Settlements</a>
+          <a class="button" href="https://topclassactions.com/category/lawsuit-settlements/open-lawsuit-settlements/" target="_blank" rel="noopener">Top Class Actions</a>
+          <a class="button" href="https://www.unclaimed.org" target="_blank" rel="noopener">State Unclaimed Property</a>
+          <a class="button" href="https://www.benefits.gov" target="_blank" rel="noopener">Benefits.gov</a>
+          <a class="button" href="https://www.grants.gov" target="_blank" rel="noopener">Grants.gov</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="green">Campaign Tools</h2>
+        <p>Fast links for outreach, docs, and email work.</p>
+        <div class="links">
+          <a class="button" href="https://mail.google.com" target="_blank" rel="noopener">Open Gmail</a>
+          <a class="button" href="https://drive.google.com" target="_blank" rel="noopener">Open Google Drive</a>
+          <a class="button" href="https://docs.google.com" target="_blank" rel="noopener">Open Google Docs</a>
+          <a class="button" href="https://calendar.google.com" target="_blank" rel="noopener">Open Google Calendar</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="red">Safety Guardrails</h2>
+        <p>This dashboard is for lawful work only. Do not use it to redirect transactions, bypass accounts, spoof identities, hide money flow, or collect funds without authorization.</p>
+        <code id="webhookBox">TradingView alert message:
+{{strategy.order.alert_message}}
+
+Webhook URL:
+http://167.71.25.184/webhook</code>
+      </div>
+    </section>
+
+    <div class="note">
+      <strong>Desktop setup:</strong> save this file as <strong>casper-dashboard.html</strong>, put it on the laptop desktop, then double-click it. You can also bookmark the opened page in Chrome or Safari.
+    </div>
+  </main>
+
+  <script>
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(function () {
+        alert('Copied: ' + text);
+      }).catch(function () {
+        prompt('Copy this:', text);
+      });
+    }
+  </script>
+</body>
+</html>
